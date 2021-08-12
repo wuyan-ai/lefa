@@ -1,4 +1,4 @@
-package com.nova.controller;
+package com.nova.novaidea.controller;
 
 public class MqttController {
     //TODO
