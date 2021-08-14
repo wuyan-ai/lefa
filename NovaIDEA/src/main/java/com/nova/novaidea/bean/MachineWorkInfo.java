@@ -9,6 +9,8 @@ import lombok.Data;
 @Data
 @Measurement(name = "MachineWorkInfo")
 public class MachineWorkInfo {
+    //一条消息代表加工一个龙眼
+
     // Column中的name为measurement中的列名
     // InfluxDB中时间戳均是以UTC时保存,在保存以及提取过程中需要注意时区转换
     @Column(name = "time")
@@ -18,7 +20,7 @@ public class MachineWorkInfo {
     @Column(name = "device_num", tag = true)
     private String device_num;     //设备编号
     @Column(name = "id", tag = true)
-    private Integer device_slot_id;        //设备中工位的id，值：1、2、3、4、5、6
+    private String device_slot_id;        //设备中工位的id，值：1、2、3、4、5、6
     @Column(name = "is_ok", tag = true)
     private String is_ok;
     @Column(name = "has_longan", tag = true)

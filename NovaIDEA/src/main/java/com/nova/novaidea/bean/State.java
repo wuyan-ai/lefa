@@ -10,7 +10,7 @@ import lombok.Data;
 @Measurement(name = "State")
 public class State {
     @Column(name = "time")
-    private String time;
+    private String time;      //更新时间
 
     // 注解中添加tag = true,表示当前字段内容为tag内容
     @Column(name = "id", tag = true)

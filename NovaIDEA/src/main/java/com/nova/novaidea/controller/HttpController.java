@@ -26,4 +26,21 @@ public class HttpController {
     public JSONObject login(@RequestParam String userName, @RequestParam String password){
         return userService.isLogin(userName,password);
     }
+
+    //设备列表
+    @RequestMapping(value = "/machineList",method = RequestMethod.GET)
+    @ResponseBody
+    public JSONObject machineList(@RequestParam Integer userid){
+        return userService.findAllMachineInfo(userid);
+    }
+
+    //单个机器（折线图下方）   flag  0:本日  1：本周 2：本月  3本年
+    @RequestMapping(value = "/oneMachineInfo",method = RequestMethod.GET)
+    @ResponseBody
+    public JSONObject oneMachineInfo(@RequestParam Integer machineid,@RequestParam String machineNum,@RequestParam String nowTime,@RequestParam int flag){
+        return userService.getOneMachineInfo(machineid,machineNum,nowTime,flag);
+    }
+
+
+
 }
