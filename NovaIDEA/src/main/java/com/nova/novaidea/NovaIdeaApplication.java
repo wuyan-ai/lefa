@@ -31,6 +31,7 @@ public class NovaIdeaApplication {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MINUTE, 0);
         cal.set(Calendar.MILLISECOND, 0);
+        cal.add(Calendar.HOUR, 1);// 24小时制
         return cal.getTime().toLocaleString();
     }
 
@@ -42,6 +43,23 @@ public class NovaIdeaApplication {
         return cal.getTime().toLocaleString();
     }
 
+    //当前北京时间向后一小时
+    public static String oneHourLater(String nowTime){
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar calendar;
+        try {
+            Date date = sdf.parse(nowTime);
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.HOUR, 24);// 24小时制
+            return calendar.getTime().toLocaleString();
+
+        }catch (Exception e){
+            System.out.println("calendar时间转换问题出错");
+
+        }
+        return "";
+    }
 
     public static String getCurrentYearStartTime(Calendar cal) {
         cal.set(cal.get(Calendar.YEAR),0, 1, 0, 0, 0);
@@ -49,15 +67,17 @@ public class NovaIdeaApplication {
         return cal.getTime().toLocaleString();
     }
 
+
     public static void main(String[] args) {
         SpringApplication.run(NovaIdeaApplication.class, args);
 
         SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try{
-            Date date =sdf.parse("2021-07-14 14:37:20.323");
+            Date date =sdf.parse("2021-07-14 00:00:00");
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
-            System.out.println("demo  "+getCurrentYearStartTime(calendar));
+
+            System.out.println("demo  "+getTimesMonthnight(calendar));
         }catch (Exception e){
             System.out.println("calendar时间转换问题出错");
         }

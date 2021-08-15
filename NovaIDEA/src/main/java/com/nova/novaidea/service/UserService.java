@@ -36,15 +36,15 @@ public interface UserService {
      *
      */
     //计算该用户本日（24h）每小时的产量   24
-    public List<Integer> dayOutputList(Integer userid,String startTime);
+    public JSONObject dayOutputList(Integer userid,String startTime);
 
     //计算用户本周（周一到周日）每天的收益 7
-    public List<Integer> weekOutputList(Integer userid);
+    public JSONObject weekOutputList(Integer userid,String nowTime);
 
     //计算用户本月（从本月1号开始）每天的收益   28，29，30，31？
-    public List<Integer> monthOutputList(Integer userid);
+    public JSONObject monthOutputList(Integer userid,String nowTime);
 
     //计算用户本年（1-12月）每月的收益   12
-    public List<Integer> yearOutputList(Integer userid);
+    public JSONObject yearOutputList(Integer userid,String nowTime);
 
 }

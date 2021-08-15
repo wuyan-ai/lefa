@@ -98,9 +98,9 @@ public class InfluxdbInterface {
         return resultList;
     }
 
-    @GetMapping("/yearOutput")
+    @GetMapping("/getOutput")
     //查询机器某段时间内的产量（龙眼个数）
-    public int yearOutput(@RequestParam String num,@RequestParam String startTime,@RequestParam String endTime){
+    public int getOutput(@RequestParam String num,@RequestParam String startTime,@RequestParam String endTime){
         /**
          * dayFlag:  时间 1h 1d
          * startTime：起始时间
@@ -108,7 +108,7 @@ public class InfluxdbInterface {
          */
         String queryCmd;
         if(endTime!="")
-            queryCmd = "SELECT count(*) FROM MachineWorkInfo WHERE device_num='"+num+"' and TIME > '"+startTime+"' and TIME <= '"+endTime+"'";
+            queryCmd = "SELECT count(*) FROM MachineWorkInfo WHERE device_num='"+num+"' and TIME >= '"+startTime+"' and TIME < '"+endTime+"'";
         else
             queryCmd = "SELECT count(*) FROM MachineWorkInfo WHERE device_num='"+num+"' and TIME >= '"+startTime+"'";
         // 添加查询条件(注意查询条件选择tag值,选择field数值会严重拖慢查询速度)

@@ -21,24 +21,24 @@ public class HttpController {
     private MachineService machineService;
 
     //登录
-    @RequestMapping(value = "/login",method = RequestMethod.GET)
+    @RequestMapping(value = "/login",method = RequestMethod.POST)
     @ResponseBody
-    public JSONObject login(@RequestParam String userName, @RequestParam String password){
-        return userService.isLogin(userName,password);
+    public JSONObject login(@RequestBody JSONObject account ){
+        return userService.isLogin(account.get("username").toString(),account.get("password").toString());
     }
 
     //设备列表
-    @RequestMapping(value = "/machineList",method = RequestMethod.GET)
+    @RequestMapping(value = "/machineList",method = RequestMethod.POST)
     @ResponseBody
-    public JSONObject machineList(@RequestParam Integer userid){
-        return userService.findAllMachineInfo(userid);
+    public JSONObject machineList(@RequestBody JSONObject userid){
+        return userService.findAllMachineInfo((int)userid.get("userid"));
     }
 
     //单个机器（折线图下方）   flag  0:本日  1：本周 2：本月  3本年
-    @RequestMapping(value = "/oneMachineInfo",method = RequestMethod.GET)
+    @RequestMapping(value = "/oneMachineInfo",method = RequestMethod.POST)
     @ResponseBody
-    public JSONObject oneMachineInfo(@RequestParam Integer machineid,@RequestParam String machineNum,@RequestParam String nowTime,@RequestParam int flag){
-        return userService.getOneMachineInfo(machineid,machineNum,nowTime,flag);
+    public JSONObject oneMachineInfo(@RequestBody JSONObject machineInfo){
+        return userService.getOneMachineInfo((int)machineInfo.get("machineid"),machineInfo.get("machineNum").toString(),machineInfo.get("nowTime").toString(),(int)machineInfo.get("flag"));
     }
 
 

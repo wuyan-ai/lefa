@@ -76,6 +76,9 @@ public class UserServiceImpl implements UserService{
         return utcFormat.format(date);
     }
 
+    //TODO：将UTC转换为北京时间
+
+
     //登陆
     public JSONObject isLogin(String userName, String password){
         List<User>  userList=mySQLInterface.findPerson(userName,password);
@@ -146,19 +149,19 @@ public class UserServiceImpl implements UserService{
             switch (flag){
                 case 0:
                     utcStartTime=localString2StringUTC(getTimesmorning(calendar));  //当天0点对应的utc时间
-                    map.put("dayOutput",influxdbInterface.yearOutput(machineNum,utcStartTime,localString2StringUTC(nowTime)));
+                    map.put("dayOutput",influxdbInterface.getOutput(machineNum,utcStartTime,localString2StringUTC(nowTime)));
                     break;
                 case 1:
                     utcStartTime=localString2StringUTC(getTimesWeekmorning(calendar));  //本周第一天0点对应的utc时间
-                    map.put("weekOutput",influxdbInterface.yearOutput(machineNum,utcStartTime,localString2StringUTC(nowTime)));
+                    map.put("weekOutput",influxdbInterface.getOutput(machineNum,utcStartTime,localString2StringUTC(nowTime)));
                     break;
                 case 2:
                     utcStartTime=localString2StringUTC(getTimesMonthmorning(calendar));  //本月第一天0点对应的utc时间
-                    map.put("monthOutput",influxdbInterface.yearOutput(machineNum,utcStartTime,localString2StringUTC(nowTime)));
+                    map.put("monthOutput",influxdbInterface.getOutput(machineNum,utcStartTime,localString2StringUTC(nowTime)));
                     break;
                 case 3:
                     utcStartTime=localString2StringUTC(getCurrentYearStartTime(calendar));  //本年第一天0点对应的utc时间
-                    map.put("yearOutput",influxdbInterface.yearOutput(machineNum,utcStartTime,localString2StringUTC(nowTime)));
+                    map.put("yearOutput",influxdbInterface.getOutput(machineNum,utcStartTime,localString2StringUTC(nowTime)));
                     break;
             }
         }catch (Exception e){
@@ -171,7 +174,7 @@ public class UserServiceImpl implements UserService{
 
     //计算用户所有设备的产量（龙眼个数）
     //单机器展示界面数据
-    /**
+    /**待测试
      * @param flag  0:本日  1：本周 2：本月  3本年
      * @return  主界面 用户所有机器的产量+节省
      */
@@ -199,49 +202,199 @@ public class UserServiceImpl implements UserService{
             switch (flag) {
                 case 0:
                     utcStartTime = localString2StringUTC(getTimesmorning(calendar));  //当天0点对应的utc时间
-                    outputSum += influxdbInterface.yearOutput(machine.getDeviceNum(), utcStartTime, localString2StringUTC(nowTime));
+                    outputSum += influxdbInterface.getOutput(machine.getDeviceNum(), utcStartTime, localString2StringUTC(nowTime));
                     //incomeSum +=
                     break;
                 case 1:
                     utcStartTime = localString2StringUTC(getTimesWeekmorning(calendar));  //本周第一天0点对应的utc时间
-                    outputSum += influxdbInterface.yearOutput(machine.getDeviceNum(), utcStartTime, localString2StringUTC(nowTime));
+                    outputSum += influxdbInterface.getOutput(machine.getDeviceNum(), utcStartTime, localString2StringUTC(nowTime));
 
                     break;
                 case 2:
                     utcStartTime = localString2StringUTC(getTimesMonthmorning(calendar));  //本月第一天0点对应的utc时间
-                    outputSum += influxdbInterface.yearOutput(machine.getDeviceNum(), utcStartTime, localString2StringUTC(nowTime));
+                    outputSum += influxdbInterface.getOutput(machine.getDeviceNum(), utcStartTime, localString2StringUTC(nowTime));
 
                     break;
                 case 3:
                     utcStartTime = localString2StringUTC(getCurrentYearStartTime(calendar));  //本年第一天0点对应的utc时间
-                    outputSum += influxdbInterface.yearOutput(machine.getDeviceNum(), utcStartTime, localString2StringUTC(nowTime));
+                    outputSum += influxdbInterface.getOutput(machine.getDeviceNum(), utcStartTime, localString2StringUTC(nowTime));
 
                     break;
             }
         }
+        data.put("outputSum",outputSum);
         return data;
     }
 
 
+    //当前北京时间向后一小时
+    public String oneHourLater(String nowTime){
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar calendar;
+        try {
+            Date date = sdf.parse(nowTime);
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.HOUR, 1);// 24小时制
+            return calendar.getTime().toLocaleString();
+
+        }catch (Exception e){
+            System.out.println("calendar时间转换问题出错");
+            data.put("msg","时区转换出错");
+        }
+       return "";
+    }
+
+    //当前北京时间向后一天
+    public String oneDayLater(String nowTime){
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar calendar;
+        try {
+            Date date = sdf.parse(nowTime);
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.HOUR, 24);// 24小时制
+            return calendar.getTime().toLocaleString();
+
+        }catch (Exception e){
+            System.out.println("calendar时间转换问题出错");
+            data.put("msg","时区转换出错");
+        }
+        return "";
+    }
 
     //计算该用户本日（24h）每小时的产量   24
-    public List<Integer> dayOutputList(Integer userid,String startTime)
+    public JSONObject dayOutputList(Integer userid,String nowTime)
     {
-        return null;
+        List<Machine> machineList=findAllMachineId(userid);
+        if((int)data.get("code")!=100)
+            return data;
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String startTime;
+        String endTime;
+        Calendar calendar;
+        try {
+            Date date = sdf.parse(nowTime);
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            startTime=getTimesmorning(calendar);  //当天北京时间0点
+            endTime=oneHourLater(startTime);
+
+        }catch (Exception e){
+            System.out.println("calendar时间转换问题出错");
+            data.put("code",103);
+            data.put("msg","时区转换出错");
+            return data;
+        }
+        List<Integer> list=new LinkedList<>();
+        int dayOutputSum=0;
+        for (int i=0;i<24;i++){
+            dayOutputSum=0;
+            int res=startTime.compareTo(nowTime); //res<=0表示startTime<=当前时间
+            if(machineList!=null&&machineList.size()!=0&&(res<=0)){
+                for(Machine machine:machineList){
+                    dayOutputSum += influxdbInterface.getOutput(machine.getDeviceNum(), localString2StringUTC(startTime), localString2StringUTC(endTime));
+                }
+                startTime=oneHourLater(startTime);
+                endTime=oneHourLater(endTime);
+                list.add(dayOutputSum);
+            }
+           // list.add(dayOutputSum);
+        }
+        data.put("dayOutputList",list);
+        if(list.size()==0) data.put("msg","本日产量为0");
+        return data;
     }
 
     //计算用户本周（周一到周日）每天的收益 7
-    public List<Integer> weekOutputList(Integer userid){
-        return null;
+    public JSONObject weekOutputList(Integer userid,String nowTime){
+        List<Machine> machineList=findAllMachineId(userid);
+        if((int)data.get("code")!=100)
+            return data;
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String startTime;
+        String endTime;
+        Calendar calendar;
+        try {
+            Date date = sdf.parse(nowTime);
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            startTime=getTimesmorning(calendar);  //当天北京时间0点
+            endTime=oneHourLater(startTime);
+
+        }catch (Exception e){
+            System.out.println("calendar时间转换问题出错");
+            data.put("code",103);
+            data.put("msg","时区转换出错");
+            return data;
+        }
+        List<Integer> list=new LinkedList<>();
+        int dayOutputSum=0;
+        for (int i=0;i<7;i++){
+            dayOutputSum=0;
+            int res=startTime.compareTo(nowTime); //res<=0表示startTime<=当前时间  大于当前时间无记录
+            if(machineList!=null&&machineList.size()!=0&&(res<=0)){
+                for(Machine machine:machineList){
+                    dayOutputSum += influxdbInterface.getOutput(machine.getDeviceNum(), localString2StringUTC(startTime), localString2StringUTC(endTime));
+                }
+                startTime=oneDayLater(startTime);
+                endTime=oneDayLater(endTime);
+                list.add(dayOutputSum);
+            }
+        }
+        data.put("weekOutputList",list);
+        if(list.size()==0) data.put("msg","本周产量为0");
+        return data;
     }
 
     //计算用户本月（从本月1号开始）每天的收益   28，29，30，31？
-    public List<Integer> monthOutputList(Integer userid){
-        return null;
+    public JSONObject monthOutputList(Integer userid,String nowTime){
+        List<Machine> machineList=findAllMachineId(userid);
+        if((int)data.get("code")!=100)
+            return data;
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String startTime;
+        String endTime;
+        String monthEndtime;//下月第一天0点  北京时间
+        Calendar calendar;
+        try {
+            Date date = sdf.parse(nowTime);
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            startTime=getTimesmorning(calendar);  //当天北京时间0点
+            endTime=oneHourLater(startTime);
+            monthEndtime=getTimesMonthnight(calendar);
+
+        }catch (Exception e){
+            System.out.println("calendar时间转换问题出错");
+            data.put("code",103);
+            data.put("msg","时区转换出错");
+            return data;
+        }
+        List<Integer> list=new LinkedList<>();
+        int res;
+        int dayOutputSum=0;
+        while (endTime.compareTo(localString2StringUTC(monthEndtime))<=0){
+            dayOutputSum=0;
+            res=startTime.compareTo(nowTime); //res<=0表示startTime<=当前时间  大于当前时间无记录
+            if(machineList!=null&&machineList.size()!=0&&(res<=0)){
+                for(Machine machine:machineList){
+                    dayOutputSum += influxdbInterface.getOutput(machine.getDeviceNum(), localString2StringUTC(startTime), localString2StringUTC(endTime));
+                }
+                startTime=oneDayLater(startTime);
+                endTime=oneDayLater(endTime);
+                list.add(dayOutputSum);
+            }
+        }
+        data.put("weekOutputList",list);
+        if(list.size()==0) data.put("msg","本周产量为0");
+        return data;
     }
 
+
     //计算用户本年（1-12月）每月的收益   12
-    public List<Integer> yearOutputList(Integer userid){
+    public JSONObject yearOutputList(Integer userid,String nowTime){
+
         return null;
     }
 
