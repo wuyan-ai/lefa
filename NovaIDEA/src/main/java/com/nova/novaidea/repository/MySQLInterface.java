@@ -2,16 +2,18 @@ package com.nova.novaidea.repository;
 
 import com.nova.novaidea.bean.Machine;
 import com.nova.novaidea.bean.User;
-import com.nova.novaidea.bean.UserMachine;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
 @Repository
-public interface  MySQLInterface extends JpaRepository<User,Long>{
+public interface  MySQLInterface extends JpaRepository<Machine,Long>{
+    //根据机器的id找机器
+    public Machine findById(Integer id);
+
     //根据用户名和密码查找用户
     @Query("select user from User user where user.userName = :userName and user.password=:password ")
     public List<User> findPerson(@Param("userName") String userName,@Param("password") String password);//@Param("geoCode")
