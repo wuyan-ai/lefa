@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.nova.novaidea.bean.Machine;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     //登陆
@@ -40,14 +41,23 @@ public interface UserService {
      *machineList: machineid,machineNum   1  a
      * List<Map<String,Object>>
      */
+    public JSONObject outputList(List<Map<String,Object>> machineList, String nowTime, int flag);
+
+    public JSONObject upUserOutput(int userid,String nowTime,int flag);
+
+    public JSONObject upUserWorkTime(int userid,String nowTime,int flag);
+
+    public JSONObject upUserIncome(int userid,String nowTime,int flag);
+
+
     //计算该用户本日（24h）每小时的产量   24
     public JSONObject dayOutputList(JSONObject machineList,String nowTime);
 
     //计算用户本周（周一到周日）每天的收益 7
     public JSONObject weekOutputList(JSONObject machineList,String nowTime);
 
-    //计算用户本月（从本月1号开始）每天的收益   28，29，30，31？
-    public JSONObject monthOutputList(JSONObject machineList,String nowTime);
+//    //计算用户本月（从本月1号开始）每天的收益   28，29，30，31？
+//    public JSONObject monthOutputList(JSONObject machineList,String nowTime);
 
     //计算用户本年（1-12月）每月的收益   12
     public JSONObject yearOutputList(JSONObject machineList,String nowTime);

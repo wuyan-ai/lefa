@@ -14,6 +14,10 @@ public interface  MySQLInterface extends JpaRepository<Machine,Long>{
     //根据机器的id找机器
     public Machine findById(Integer id);
 
+    //查找所有用户
+    @Query("select user.id from User user ")
+    public List<Integer> findAllUserId();
+
     //根据用户名和密码查找用户
     @Query("select user from User user where user.userName = :userName and user.password=:password ")
     public List<User> findPerson(@Param("userName") String userName,@Param("password") String password);//@Param("geoCode")

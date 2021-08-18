@@ -39,9 +39,14 @@ public class NovaIdeaApplication {
         int day = cal.get(Calendar.DAY_OF_WEEK);
         // 根据日历的规则，给当前日期减去星期几与一个星期第一天的差值
         cal.add(Calendar.DATE, cal.getFirstDayOfWeek() - day);
-
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime().toLocaleString();
     }
+
+
 
     // 获得本月最后一天24点时间
     public static String getTimesMonthnight(Calendar cal) {
@@ -111,11 +116,11 @@ public class NovaIdeaApplication {
 
         SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try{
-            Date date =sdf.parse("2021-08-15 00:00:00");
+            Date date =sdf.parse("2021-08-15 01:42:43");
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
             String temp=getTimesWeekmorning(calendar);
-            System.out.println("demo0  "+oneMonthLater("2021-12-15 00:00:00"));
+            System.out.println("demo0  "+getTimesWeekmorning(calendar));
             System.out.println("demo  "+UTCToCST("2021-08-15T13:41:43.90Z"));
         }catch (Exception e){
             System.out.println("calendar时间转换问题出错");

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -31,6 +32,18 @@ public class UserServiceImpl implements UserService{
         return cal.getTime().toLocaleString();
     }
 
+    //时间字符串转Date
+    public static Date StrToDate(String str) {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = null;
+        try {
+            date = format.parse(str);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+
     // 获得本周一0点时间
     public static String getTimesWeekmorning(Calendar cal) {
         int dayWeek = cal.get(Calendar.DAY_OF_WEEK);
@@ -43,7 +56,10 @@ public class UserServiceImpl implements UserService{
         int day = cal.get(Calendar.DAY_OF_WEEK);
         // 根据日历的规则，给当前日期减去星期几与一个星期第一天的差值
         cal.add(Calendar.DATE, cal.getFirstDayOfWeek() - day);
-
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime().toLocaleString();
     }
 
@@ -419,7 +435,7 @@ public class UserServiceImpl implements UserService{
             data.put("msg","时区转换出错");
             return data;
         }
-        int worktime=0;   //用户所有设备总收益  本日节省=15/2*（50%或100%）*100*机器一天工作时间/8
+        double worktime=0;   //用户所有设备总收益  本日节省=15/2*（50%或100%）*100*机器一天工作时间/8
         JSONObject temp=new JSONObject();
         for(Machine machine:machineList){
             switch (flag) {
@@ -442,7 +458,7 @@ public class UserServiceImpl implements UserService{
             }
             temp=influxdbInterface.getWorkTime(machine.getDeviceNum(), utcStartTime, localString2StringUTC(nowTime));
             if((int)temp.get("code")!=1000) return temp;
-            worktime +=Double.valueOf(temp.get("data").toString()).intValue();
+            worktime +=Double.valueOf(temp.get("data").toString());
         }
         data.put("code",1000);
         data.put("msg","");
@@ -457,6 +473,210 @@ public class UserServiceImpl implements UserService{
      * @param nowTime
      * @return
      */
+    public JSONObject outputList(List<Map<String,Object>> machineList,String nowTime,int flag){
+        JSONObject data = new JSONObject();
+        if(flag<0||flag>3){
+            data.put("code",3003);
+            data.put("msg","0:本日 1：本周 2：本月 3：本年 flag超出界限");
+            return data;
+        }
+        List<Map<String,Object>> machineIdAndNum=machineList;
+        if(machineList==null||machineList.size()==0){
+            data.put("code",3003);
+            data.put("msg","设备列表为空");
+            return data;
+        }
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String startTime="";
+        String tempTime="";
+        String nowUtcTime=localString2StringUTC(nowTime);
+        Calendar calendar;
+        try {
+            Date date = sdf.parse(nowTime);
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            switch (flag){
+                case 0:
+                    startTime=getTimesmorning(calendar);  //当天北京时间0点
+                    tempTime=oneHourLater(startTime);
+                    break;
+                case 1:
+                    startTime=getTimesWeekmorning(calendar);  //本周第一天北京时间0点
+                    tempTime=oneDayLater(startTime);
+                    break;
+                case 2:
+                    startTime=getTimesMonthmorning(calendar);  //本月第一天北京时间0点
+                    tempTime=oneDayLater(startTime);
+                    break;
+                case 3:
+                    startTime=getCurrentYearStartTime(calendar);  //本年第一天北京时间0点
+                    tempTime=oneMonthLater(startTime);
+                    break;
+            }
+        }catch (Exception e){
+            System.out.println("calendar时间转换问题出错");
+            data.put("code",3003);
+            data.put("msg","时区转换出错");
+            return data;
+        }
+        List<Integer> list=new LinkedList<>();
+        int res;
+        int outputSum=0;
+        JSONObject temp;
+        while (StrToDate(startTime).compareTo(StrToDate(nowTime))<=0){
+            outputSum=0;
+            for(Map<String,Object> machine:machineIdAndNum){
+                temp = influxdbInterface.getOutput(machine.get("machineNum").toString(), localString2StringUTC(startTime),localString2StringUTC(tempTime));
+                if((int)temp.get("code")!=1000) return temp;
+                outputSum += Double.valueOf(temp.get("data").toString()).intValue();
+            }
+            switch (flag){
+                case 0:
+                    startTime=oneHourLater(startTime);   //往后推迟一小时
+                    tempTime=oneHourLater(tempTime);
+                    System.out.println("本日"+startTime+"   "+tempTime);
+                    break;
+                case 1:
+                    startTime=oneDayLater(startTime);   //往后推迟一天
+                    tempTime=oneDayLater(tempTime);
+                    System.out.println("本周"+startTime+"   "+tempTime);
+                    break;
+                case 2:
+                    startTime=oneDayLater(startTime);   //往后推迟一天
+                    tempTime=oneDayLater(tempTime);
+                    break;
+                case 3:
+                    startTime=oneMonthLater(startTime);   //往后推迟一天
+                    tempTime=oneMonthLater(tempTime);
+                    break;
+            }
+            list.add(outputSum);
+
+        }
+        data.put("code",1000);
+        data.put("data",list);
+        if(list.size()==0) data.put("msg","产量为0");
+        return data;
+    }
+
+
+    public JSONObject upUserOutput(int userid,String nowTime,int flag){
+        JSONObject data = new JSONObject();
+        List<Integer> allUserId= mySQLInterface.findAllUserId();
+        if(allUserId==null||allUserId.size()==0){
+            data.put("code",3000);
+            data.put("msg","未查询到用户");
+        }
+        List<Machine> machineList;
+        JSONObject userOutputSum;
+        int totalUserSum=allUserId.size();
+        int overplusUserSum=0;
+        int output;
+        machineList=mySQLInterface.findUserMachine(userid);
+        if(machineList==null||machineList.size()==0)
+            output=0;
+        else {
+            userOutputSum=calculateOutputSum(machineList,nowTime,flag);
+            if((int)(userOutputSum.get("code"))!=1000) return userOutputSum;
+            output=Double.valueOf(userOutputSum.get("data").toString()).intValue();
+        }
+        int tempOutput;
+        for (Integer user:allUserId){
+            if(user==userid) continue;
+            machineList=mySQLInterface.findUserMachine(user);
+            if(machineList==null||machineList.size()==0)
+                tempOutput=0;
+            else {
+                userOutputSum=calculateOutputSum(machineList,nowTime,flag);
+                if((int)(userOutputSum.get("code"))!=1000) return userOutputSum;
+                tempOutput=Double.valueOf(userOutputSum.get("data").toString()).intValue();;
+            }
+            if(output>tempOutput)
+                overplusUserSum++;
+        }
+        data.put("code",1000);
+        data.put("data",(double)overplusUserSum/(double)totalUserSum);
+        return data;
+    }
+
+    public JSONObject upUserWorkTime(int userid,String nowTime,int flag){
+        JSONObject data = new JSONObject();
+        List<Integer> allUserId= mySQLInterface.findAllUserId();
+        if(allUserId==null||allUserId.size()==0){
+            data.put("code",3000);
+            data.put("msg","未查询到用户");
+        }
+        List<Machine> machineList;
+        JSONObject upUserWorkTime;
+        int totalUserSum=allUserId.size();
+        int overplusUserSum=0;
+        double worktime;
+        machineList=mySQLInterface.findUserMachine(userid);
+        if(machineList==null||machineList.size()==0)
+            worktime=0;
+        else {
+            upUserWorkTime=calculateWorktimeSum(machineList,nowTime,flag);
+            if((int)(upUserWorkTime.get("code"))!=1000) return upUserWorkTime;
+            worktime=Double.valueOf(upUserWorkTime.get("data").toString());
+        }
+        double temp;
+        for (Integer user:allUserId){
+            if(user==userid) continue;
+            machineList=mySQLInterface.findUserMachine(user);
+            if(machineList==null||machineList.size()==0)
+                temp=0;
+            else {
+                upUserWorkTime=calculateWorktimeSum(machineList,nowTime,flag);
+                if((int)(upUserWorkTime.get("code"))!=1000) return upUserWorkTime;
+                temp=Double.valueOf(upUserWorkTime.get("data").toString());
+            }
+            if(worktime>temp)
+                overplusUserSum++;
+        }
+        data.put("code",1000);
+        data.put("data",(double)overplusUserSum/(double)totalUserSum);
+        return data;
+    }
+
+    public JSONObject upUserIncome(int userid,String nowTime,int flag){
+        JSONObject data = new JSONObject();
+        List<Integer> allUserId= mySQLInterface.findAllUserId();
+        if(allUserId==null||allUserId.size()==0){
+            data.put("code",3000);
+            data.put("msg","未查询到用户");
+        }
+        List<Machine> machineList;
+        JSONObject upUserIncome;
+        int totalUserSum=allUserId.size();
+        int overplusUserSum=0;
+        double worktime;
+        machineList=mySQLInterface.findUserMachine(userid);
+        if(machineList==null||machineList.size()==0)
+            worktime=0;
+        else {
+            upUserIncome=calculateIncomeSum(machineList,nowTime,flag);
+            if((int)(upUserIncome.get("code"))!=1000) return upUserIncome;
+            worktime=Double.valueOf(upUserIncome.get("data").toString());
+        }
+        double temp;
+        for (Integer user:allUserId){
+            if(user==userid) continue;
+            machineList=mySQLInterface.findUserMachine(user);
+            if(machineList==null||machineList.size()==0)
+                temp=0;
+            else {
+                upUserIncome=calculateIncomeSum(machineList,nowTime,flag);
+                if((int)(upUserIncome.get("code"))!=1000) return upUserIncome;
+                temp=Double.valueOf(upUserIncome.get("data").toString());
+            }
+            if(worktime>temp)
+                overplusUserSum++;
+        }
+        data.put("code",1000);
+        data.put("data",(double)overplusUserSum/(double)totalUserSum);
+        return data;
+    }
+
     //计算该设备本日（24h）每小时的产量   24
     public JSONObject dayOutputList(JSONObject machineList,String nowTime)
     {
@@ -499,7 +719,7 @@ public class UserServiceImpl implements UserService{
                 endTime=oneHourLater(endTime);
                 list.add(dayOutputSum);
             }
-           // list.add(dayOutputSum);
+            // list.add(dayOutputSum);
         }
         data.put("code",1000);
         data.put("data",list);
@@ -554,56 +774,6 @@ public class UserServiceImpl implements UserService{
         if(list.size()==0) data.put("msg","本周产量为0");
         return data;
     }
-
-    //计算用户本月（从本月1号开始）每天的收益   28，29，30，31？
-    public JSONObject monthOutputList(JSONObject machineList,String nowTime){
-        JSONObject data = new JSONObject();
-        List<Map<String,Object>> machineIdAndNum=(List<Map<String,Object>>)machineList;
-        if((int)machineList.get("code")!=1000)
-            return machineList;
-        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String startTime;
-        String endTime;
-        String monthEndtime;//下月第一天0点  北京时间
-        Calendar calendar;
-        try {
-            Date date = sdf.parse(nowTime);
-            calendar = Calendar.getInstance();
-            calendar.setTime(date);
-            startTime=getTimesMonthmorning(calendar);  //本月第一天北京时间0点
-            endTime=oneHourLater(startTime);
-            monthEndtime=getTimesMonthnight(calendar);
-
-        }catch (Exception e){
-            System.out.println("calendar时间转换问题出错");
-            data.put("code",3003);
-            data.put("msg","时区转换出错");
-            return data;
-        }
-        List<Integer> list=new LinkedList<>();
-        int res;
-        int dayOutputSum=0;
-        JSONObject temp;
-        while (endTime.compareTo(localString2StringUTC(monthEndtime))<=0){
-            dayOutputSum=0;
-            res=startTime.compareTo(nowTime); //res<=0表示startTime<=当前时间  大于当前时间无记录
-            if(res<=0){
-                for(Map<String,Object> machine:machineIdAndNum){
-                    temp = influxdbInterface.getOutput(machine.get("machineNum").toString(), localString2StringUTC(startTime), localString2StringUTC(endTime));
-                    if((int)temp.get("code")!=1000) return temp;
-                    dayOutputSum += Double.valueOf(temp.get("data").toString()).intValue();
-                }
-                startTime=oneDayLater(startTime);
-                endTime=oneDayLater(endTime);
-                list.add(dayOutputSum);
-            }
-        }
-        data.put("code",1000);
-        data.put("data",list);
-        if(list.size()==0) data.put("msg","本月产量为0");
-        return data;
-    }
-
 
     //计算用户本年（1-12月）每月的收益   12
     public JSONObject yearOutputList(JSONObject machineList,String nowTime){
