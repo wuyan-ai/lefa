@@ -1,0 +1,15 @@
+POST http://wy.free.svipss.top/user/login
+Content-Type: application/json
+
+{
+  "username": "hello",
+  "password": "www"
+}
+
+###
+POST http://wy.free.svipss.top/user/machineList
+Content-Type: application/json
+
+{
+  "userid": 1
+}
