@@ -13,3 +13,47 @@ Content-Type: application/json
 {
   "userid": 1
 }
+
+###
+POST http://wy.free.svipss.top/user/oneMachineInfo
+Content-Type: application/json
+
+{
+  "machineid": 1,
+  "machineNum": "a",
+  "flag": 1,
+  "nowTime": "2021-08-21 18:12:24"
+}
+
+###
+POST http://wy.free.svipss.top/user/outputList
+Content-Type: application/json
+
+{
+  "machineIdAndNum": [
+    {
+      "machineNum": "a",
+      "machineid": 1
+    },
+    {
+      "machineNum": "b",
+      "machineid": 2
+    },
+    {
+      "machineNum": "c",
+      "machineid": 3
+    }
+  ],
+  "flag": 0,
+  "nowTime": "2021-08-21 17:37:46"
+}
+
+###
+POST http://wy.free.svipss.top/user/upUserInfo
+Content-Type: application/json
+
+{
+"userid": 1,
+"flag": 1,
+"nowTime": "2021-08-21 18:12:24"
+}
