@@ -204,9 +204,9 @@ public class UserServiceImpl implements UserService{
             if(result==null){
                 map.put("machineUpdateTime","暂无");
                 map.put("machineStatus","暂无");
-                map.put("machineWorkTime",0);
-                map.put("machine_name","设备"+machine.getId());
-                map.put("machineID",machine.getDeviceNum());
+               // map.put("machineWorkTime",0);
+                map.put("machineid",machine.getId());
+                map.put("machineNum",machine.getDeviceNum());
                 resultList.add(map);
                 continue;
             }
@@ -218,8 +218,8 @@ public class UserServiceImpl implements UserService{
                 map.put("machineStatus","暂无");
                 map.put("machineWorkTime",0);
             }
-            map.put("machine_name","设备"+machine.getId());
-            map.put("machineID",machine.getDeviceNum());
+            map.put("machineid",machine.getId());
+            map.put("machineNum",machine.getDeviceNum());
             resultList.add(map);
         }
         data.put("code",1000);
@@ -256,13 +256,15 @@ public class UserServiceImpl implements UserService{
         if(flag<0||flag>3) {
             data.put("code",3002);
             data.put("msg","0:本日  1：本周 2：本月  3本年 flag值超界");
+            data.put("data",flag);
         }
         data=influxdbInterface.getStateAndUpdateTime(machineNum);
         if((int)data.get("code")!=1000) return data;
         Map<String,Object> map=(Map<String,Object>)data.get("data");   //查
         data= new JSONObject();
-        map.put("machine_name","设备"+machineid);
-        map.put("machineID",machineNum);
+        map.put("machineid",machineid);
+        map.put("machineNum",machineNum);
+        map.put("flag",flag);
         SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         JSONObject temp;
         try{
@@ -312,7 +314,7 @@ public class UserServiceImpl implements UserService{
     public JSONObject calculateOutputSum(List<Machine> machineList, String nowTime,int flag){
         JSONObject data = new JSONObject();
         if(flag<0||flag>3) {
-            data.put("code",3001);
+            data.put("code",3002);
             data.put("msg","0:本日  1：本周 2：本月  3本年 flag值超界");
         }
         SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -365,7 +367,7 @@ public class UserServiceImpl implements UserService{
     public JSONObject calculateIncomeSum(List<Machine> machineList,String nowTime,int flag){
         JSONObject data = new JSONObject();
         if(flag<0||flag>3) {
-            data.put("code",3001);
+            data.put("code",3002);
             data.put("msg","0:本日  1：本周 2：本月  3本年 flag值超界");
         }
         SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -418,7 +420,7 @@ public class UserServiceImpl implements UserService{
     public JSONObject calculateWorktimeSum(List<Machine> machineList,String nowTime,int flag){
         JSONObject data = new JSONObject();
         if(flag<0||flag>3) {
-            data.put("code",3001);
+            data.put("code",3002);
             data.put("msg","0:本日  1：本周 2：本月  3本年 flag值超界");
         }
         SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
