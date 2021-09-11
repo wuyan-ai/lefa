@@ -79,3 +79,12 @@ Content-Type: application/json
   "flag": 3,
   "nowTime": "2021-9-1 00:00:00"
 }
+
+
+
+###新增influxdb数据库数据
+GET http://49.234.156.101:7777/index
+
+
+###新增influxdb数据库数据
+GET http://49.234.156.101:7777/test
