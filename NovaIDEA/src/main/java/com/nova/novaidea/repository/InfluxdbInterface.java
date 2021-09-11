@@ -47,7 +47,7 @@ public class InfluxdbInterface {
         Point point = null;
 
             point = Point.measurement("State")
-                    .tag("id", "a")
+                    .tag("id", "c")
                     .addField("state", 3)
                     .addField("work_time", 0.5).build();
             lines.add(point.lineProtocol());
@@ -59,10 +59,10 @@ public class InfluxdbInterface {
         List<String> lines = new ArrayList<String>();
         Point point = null;
         point = Point.measurement(measurement)
-                .tag("device_num", "c")
+                .tag("device_num", "a")
                 .tag("id","3")
                 .tag("is_ok","true")
-                .tag("has_longan","false")
+                .tag("has_longan","true")
                 .addField("do_tomes", 1)
                 .addField("done_time", 1)
                 .addField("range",1)

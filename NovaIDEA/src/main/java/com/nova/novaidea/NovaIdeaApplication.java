@@ -56,20 +56,21 @@ public class NovaIdeaApplication {
         return cal.getTime().toLocaleString();
     }
 
-    //当前北京时间向后一小时
-    public static String oneHourLater(String nowTime){
+    //当前北京时间向后8小时
+    public static String eightHourLater(String nowTime){
+        JSONObject data = new JSONObject();
         SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Calendar calendar;
         try {
             Date date = sdf.parse(nowTime);
             calendar = Calendar.getInstance();
             calendar.setTime(date);
-            calendar.add(Calendar.HOUR, 24);// 24小时制
+            calendar.add(Calendar.HOUR, 8);// 24小时制
             return calendar.getTime().toLocaleString();
 
         }catch (Exception e){
             System.out.println("calendar时间转换问题出错");
-
+            data.put("msg","时区转换出错");
         }
         return "";
     }
@@ -111,6 +112,24 @@ public class NovaIdeaApplication {
         return "";
     }
 
+    //当前北京时间向后15天
+    public static String fifthDayLater(String nowTime){
+        JSONObject data = new JSONObject();
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar calendar;
+        try {
+            Date date = sdf.parse(nowTime);
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.HOUR, 24*14);// 24小时制
+            return calendar.getTime().toLocaleString();
+
+        }catch (Exception e){
+            System.out.println("calendar时间转换问题出错");
+            data.put("msg","时区转换出错");
+        }
+        return "";
+    }
     public static void main(String[] args) {
         SpringApplication.run(NovaIdeaApplication.class, args);
 
@@ -120,6 +139,7 @@ public class NovaIdeaApplication {
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(date);
             String temp=getTimesWeekmorning(calendar);
+            System.out.println("sss  "+eightHourLater("2021-08-01 23:42:43"));
             System.out.println("demo0  "+getTimesWeekmorning(calendar));
             System.out.println("demo  "+UTCToCST("2021-08-15T13:41:43.90Z"));
         }catch (Exception e){
