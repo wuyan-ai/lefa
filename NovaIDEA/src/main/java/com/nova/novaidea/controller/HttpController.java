@@ -182,6 +182,8 @@ public class HttpController {
 
         map.put("flag",(int)jsonObject.get("flag"));
 
+        map.put("nowTime",jsonObject.get("nowTime").toString());
+
         data.put("code",1000);
         data.put("msg","");
         data.put("data",map);

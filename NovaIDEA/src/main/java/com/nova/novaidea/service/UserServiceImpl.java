@@ -116,7 +116,24 @@ public class UserServiceImpl implements UserService{
         }
         return "";
     }
+    //当前北京时间向后8小时
+    public String eightHourLater(String nowTime){
+        JSONObject data = new JSONObject();
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar calendar;
+        try {
+            Date date = sdf.parse(nowTime);
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.HOUR, 8);// 24小时制
+            return calendar.getTime().toLocaleString();
 
+        }catch (Exception e){
+            System.out.println("calendar时间转换问题出错");
+            data.put("msg","时区转换出错");
+        }
+        return "";
+    }
     //当前北京时间向后一天
     public String oneDayLater(String nowTime){
         JSONObject data = new JSONObject();
@@ -127,6 +144,25 @@ public class UserServiceImpl implements UserService{
             calendar = Calendar.getInstance();
             calendar.setTime(date);
             calendar.add(Calendar.HOUR, 24);// 24小时制
+            return calendar.getTime().toLocaleString();
+
+        }catch (Exception e){
+            System.out.println("calendar时间转换问题出错");
+            data.put("msg","时区转换出错");
+        }
+        return "";
+    }
+
+    //当前北京时间向后14天  月中
+    public String fifthDayLater(String nowTime){
+        JSONObject data = new JSONObject();
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Calendar calendar;
+        try {
+            Date date = sdf.parse(nowTime);
+            calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.HOUR, 24*14);// 24小时制
             return calendar.getTime().toLocaleString();
 
         }catch (Exception e){
@@ -491,6 +527,7 @@ public class UserServiceImpl implements UserService{
         SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         String startTime="";
         String tempTime="";
+        String flagYear="";
         String nowUtcTime=localString2StringUTC(nowTime);
         Calendar calendar;
         try {
@@ -504,15 +541,16 @@ public class UserServiceImpl implements UserService{
                     break;
                 case 1:
                     startTime=getTimesWeekmorning(calendar);  //本周第一天北京时间0点
-                    tempTime=oneDayLater(startTime);
+                    tempTime=eightHourLater(startTime);
                     break;
                 case 2:
                     startTime=getTimesMonthmorning(calendar);  //本月第一天北京时间0点
                     tempTime=oneDayLater(startTime);
                     break;
                 case 3:
+                    flagYear=getCurrentYearStartTime(calendar);
                     startTime=getCurrentYearStartTime(calendar);  //本年第一天北京时间0点
-                    tempTime=oneMonthLater(startTime);
+                    tempTime=fifthDayLater(startTime);
                     break;
             }
         }catch (Exception e){
@@ -525,6 +563,8 @@ public class UserServiceImpl implements UserService{
         int res;
         int outputSum=0;
         JSONObject temp;
+        boolean flagfif=true;
+        list.add(0);
         while (StrToDate(startTime).compareTo(StrToDate(nowTime))<=0){
             outputSum=0;
             for(Map<String,Object> machine:machineIdAndNum){
@@ -539,8 +579,8 @@ public class UserServiceImpl implements UserService{
                     System.out.println("本日"+startTime+"   "+tempTime);
                     break;
                 case 1:
-                    startTime=oneDayLater(startTime);   //往后推迟一天
-                    tempTime=oneDayLater(tempTime);
+                    startTime=eightHourLater(startTime);   //往后推迟8h
+                    tempTime=eightHourLater(tempTime);
                     System.out.println("本周"+startTime+"   "+tempTime);
                     break;
                 case 2:
@@ -548,8 +588,16 @@ public class UserServiceImpl implements UserService{
                     tempTime=oneDayLater(tempTime);
                     break;
                 case 3:
-                    startTime=oneMonthLater(startTime);   //往后推迟一天
-                    tempTime=oneMonthLater(tempTime);
+                    if(flagfif){           //本月15号-下个月1号
+                        flagYear=oneMonthLater(flagYear) ;             //往后推迟一月
+                        startTime=tempTime;
+                        tempTime=flagYear;
+                        flagfif=!flagfif;
+                    }else{               //本月1号-本月15号
+                        startTime=flagYear;
+                        tempTime=fifthDayLater(startTime);
+                        flagfif=!flagfif;
+                    }
                     break;
             }
             list.add(outputSum);
@@ -583,6 +631,7 @@ public class UserServiceImpl implements UserService{
             output=Double.valueOf(userOutputSum.get("data").toString()).intValue();
         }
         int tempOutput;
+        //System.out.println("allUserId "+allUserId);
         for (Integer user:allUserId){
             if(user==userid) continue;
             machineList=mySQLInterface.findUserMachine(user);
