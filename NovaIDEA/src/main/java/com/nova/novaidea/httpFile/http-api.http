@@ -1,4 +1,4 @@
-POST http://wy.free.svipss.top/user/login
+POST http://49.234.156.101:7777/user/login
 Content-Type: application/json
 
 {
@@ -7,7 +7,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://wy.free.svipss.top/user/machineList
+POST http://49.234.156.101:7777/user/machineList
 Content-Type: application/json
 
 {
@@ -15,7 +15,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://wy.free.svipss.top/user/oneMachineInfo
+POST http://49.234.156.101:7777/user/oneMachineInfo
 Content-Type: application/json
 
 {
@@ -26,7 +26,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://wy.free.svipss.top/user/oneOutputList
+POST http://49.234.156.101:7777/user/oneOutputList
 Content-Type: application/json
 
 {
@@ -41,7 +41,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://wy.free.svipss.top/user/upUserInfo
+POST http://49.234.156.101:7777/user/upUserInfo
 Content-Type: application/json
 
 {
@@ -51,7 +51,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://wy.free.svipss.top/user/mainpageOutputList
+POST http://49.234.156.101:7777/user/mainpageOutputList
 Content-Type: application/json
 
 {
@@ -61,7 +61,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://wy.free.svipss.top/user/nowUserOutputSum
+POST http://49.234.156.101:7777/user/nowUserOutputSum
 Content-Type: application/json
 
 {
@@ -71,7 +71,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://wy.free.svipss.top/user/nowMachineOutputSum
+POST http://49.234.156.101:7777/user/nowMachineOutputSum
 Content-Type: application/json
 
 {
