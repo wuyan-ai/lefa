@@ -29,7 +29,9 @@ server:
     context-path: /
   ssl:
     enabled: true
-    key-store: src/main/resources/nova.p12 # （密钥文件路径，也可以配置绝对路径）
+#    这个路径是服务器存放nova.p12的路径，不要修改
+    key-store: C:/MyProject/nova.p12
+#    key-store: src/main/resources/nova.p12 # （密钥文件路径，也可以配置绝对路径）
     key-store-password: 123456 # （密钥生成时输入的密钥库口令）
     key-store-type: PKCS12 #（密钥类型，与密钥生成命令一致）
     key-alias: tomcat #（密钥别名，与密钥生成命令一致）

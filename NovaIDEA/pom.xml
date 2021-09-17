@@ -105,12 +105,12 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
-                    <encoding>UTF-8</encoding>
-                    <nonFilteredFileExtensions>
+<!--                    <encoding>UTF-8</encoding>-->
+<!--                    <nonFilteredFileExtensions>-->
                         <!-- 避免 https 证书文件被修改 -->
-                        <nonFilteredFileExtension>p12</nonFilteredFileExtension>
-                        <nonFilteredFileExtension>pkcs12</nonFilteredFileExtension>
-                    </nonFilteredFileExtensions>
+<!--                        <nonFilteredFileExtension>p12</nonFilteredFileExtension>-->
+<!--                        <nonFilteredFileExtension>pkcs12</nonFilteredFileExtension>-->
+<!--                    </nonFilteredFileExtensions>-->
                 </configuration>
             </plugin>
             <plugin>
